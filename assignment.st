@@ -20,7 +20,10 @@ TicTacToe extend [
 	makeNewGame [
 		1 to: (boardMatrix size) do: [:x|
 			boardMatrix at: x put: (Array new: 3).
-		]
+		].
+      '' displayNl.
+      'A clean board has been created.' displayNl.
+      '' displayNl.
 	]
 	
 	"Print the scoreboard"
@@ -89,8 +92,10 @@ TicTacToe extend [
 	]
 	
 	"Check if we have a winner and store the winner."
-	checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 element|
-		"Column counting"
+	checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 rx ro count element|
+		"It would have been easier to use a 9 slot array, but I'm
+       too far to quit now!"
+      "Column counting"
 		xc1 := 0.
 		xc2 := 0.
 		xc3 := 0.
@@ -100,38 +105,48 @@ TicTacToe extend [
 
 		"Check rows"
 		1 to: (boardMatrix size) do: [:x|
-			"Looping by row"
-			((x equals)) ifTrue: [
-				"Get element"
-				element := x at: 1.
-				(element = $X) ifTrue: [
-					"Player Won!"
-					xwins := xwins + 1.
-					winner := 'Player'.
-					^true.
-				] ifFalse: [
-					"Computer Won!"
-					owins := owins + 1.
-					winner := 'Computer'.
-					^true.
-				].
-			].
+
+         rx := 0.
+         ro := 0.
+         
+         1 to: (boardMatrix size) do: [:y|
+            (((boardMatrix at: x) at: y) = $X) ifTrue: [ rx := rx + 1. ].
+            (((boardMatrix at: x) at: y) = $O) ifTrue: [ ro := ro + 1. ].
+         ].
+
+         (rx = 3) ifTrue: [
+            xwins := xwins + 1.
+            winner := 'Player'.
+            ^true.
+         ].
+
+         (ro = 3) ifTrue: [
+            owins := owins + 1.
+            winner := 'Computer'.
+            ^true.
+         ].
 		].
 
 		"Check columns"
 		1 to: (boardMatrix size) do: [:x|
 			"Increment row counts"
-			((x at: 1) = $X) ifTrue: [ xc1 := xc1 + 1. ] ifFalse: [ oc1 := oc1 + 1. ].
-			((x at: 2) = $X) ifTrue: [ xc2 := xc2 + 1. ] ifFalse: [ oc2 := oc2 + 1. ].
-			((x at: 3) = $X) ifTrue: [ xc3 := xc3 + 1. ] ifFalse: [ oc3 := oc3 + 1. ].
+			(((boardMatrix at: x) at: 1) = $X) ifTrue: [ xc1 := xc1 + 1. ].
+         (((boardMatrix at: x) at: 1) = $O) ifTrue: [ oc1 := oc1 + 1. ].
+
+			(((boardMatrix at: x) at: 2) = $X) ifTrue: [ xc2 := xc2 + 1. ].
+         (((boardMatrix at: x) at: 2) = $O) ifTrue: [ oc2 := oc2 + 1. ].
+			
+         (((boardMatrix at: x) at: 3) = $X) ifTrue: [ xc3 := xc3 + 1. ].
+         (((boardMatrix at: x) at: 3) = $O) ifTrue: [ oc3 := oc3 + 1. ].
 		].
+      
 		"Perform logical check."
-		(xc1 = 3 || xc2 = 3 || xc3 = 3) ifTrue: [
+		((xc1 = 3 ) | (xc2 = 3) | (xc3 = 3)) ifTrue: [
 			xwins := xwins + 1.
 			winner := 'Player'.
 			^true.
 		].
-		(oc1 = 3 || oc2 = 3 || oc3 = 3) ifTrue: [
+		((oc1 = 3) | (oc2 = 3) | (oc3 = 3)) ifTrue: [
 			owins := owins + 1.
 			winner := 'Computer'.
 			^true.
@@ -140,7 +155,19 @@ TicTacToe extend [
 		"Check diagonals"
 		
 
-		"Tie or loss"
+		"Tie or loss. Check loop and count all slots/check nil."
+      count := 0.
+      1 to: (boardMatrix size) do: [:x|
+         1 to: (boardMatrix size) do: [:y|
+            (((boardMatrix at: x) at: y) ~= nil) ifTrue: [ count := count + 1. ].
+         ].
+      ].
+      
+      "No one won"
+      (count = 9) ifTrue: [
+         winner := 'No one'.
+         ^true.
+      ].
 		
 		^false.
 	]
@@ -151,16 +178,11 @@ TicTacToe extend [
 	]
 ].
 
-"Computer's name"
-computerName := 'Watson'.
-
 "Determine which player is who"
 'Name of Player: ' display.
 player := stdin nextLine.
 
 '' displayNl.
-
-('WARNING ', player asUppercase, ': The computer never loses!. Good luck!') displayNl.
 'A clean board has been created.' displayNl.
 '' displayNl.
 
@@ -182,9 +204,9 @@ winnerName := nil.
 "The main game loop"
 [quit] whileFalse: [
 	(computersTurn) ifTrue: [
-		(computerName, ' is playing.') displayNl.
+		('Computer is playing.') displayNl.
 		game runComputer.
-		(computerName, ' has made a move. Your turn!') displayNl.
+		('Computer has made a move. Your turn!') displayNl.
 		'' displayNl.
 		computersTurn := false.
 		game printScore.
@@ -205,20 +227,22 @@ winnerName := nil.
 		"Get the winner and display their name."
 		winnerName := game getWinner.
 		(winnerName, ' has won the game.') displayNl.
+      game printScore.
 		'' displayNl.
 		'Would you like to play again? (y/n): ' display.
 		in := stdin nextLine.
 		"Check for yes to continue"
-		(in = 'y' || in = 'Y') ifTrue: [
+		((in = 'y') | (in = 'Y')) ifTrue: [
 			(playerStarts) ifTrue: [
 				playerStarts := false.
 				computersTurn := true.
+            game makeNewGame.
 			] ifFalse: [
 				playerStarts := true.
 				computersTurn := false.
+            game makeNewGame.
+            game printBoard.
 			].
-			"Clear the gameboard."
-			game makeNewGame.
 		] ifFalse: [ quit := true. ].
 	].
 ].
