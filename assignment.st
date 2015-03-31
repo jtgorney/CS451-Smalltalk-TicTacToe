@@ -92,7 +92,7 @@ TicTacToe extend [
 	]
 	
 	"Check if we have a winner and store the winner."
-	checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 rx ro count element|
+	checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 rx ro d1x d1o d2x d2o count element|
 		"It would have been easier to use a 9 slot array, but I'm
        too far to quit now!"
       "Column counting"
@@ -153,7 +153,43 @@ TicTacToe extend [
 		].
 	
 		"Check diagonals"
+
+      "Set diagonal count"
+      d1x := 0.
+      d2x := 0.
+      d1o := 0.
+      d2o := 0.
 		
+      "Check for player X"
+      (((boardMatrix at: 1) at: 1) = $X) ifTrue: [ d1x := d1x + 1. ].
+      (((boardMatrix at: 2) at: 2) = $X) ifTrue: [ d1x := d1x + 1. d2x := d2x + 1. ].
+      (((boardMatrix at: 3) at: 3) = $X) ifTrue: [ d1x := d1x + 1. ].
+      (((boardMatrix at: 1) at: 3) = $X) ifTrue: [ d2x := d2x + 1. ].
+      (((boardMatrix at: 3) at: 1) = $X) ifTrue: [ d2x := d2x + 1. ].
+      
+      "Check for player O"
+      (((boardMatrix at: 1) at: 1) = $O) ifTrue: [ d1o := d1o + 1. ].
+      (((boardMatrix at: 2) at: 2) = $O) ifTrue: [ d1o := d1o + 1. d2o := d2o + 1. ].
+      (((boardMatrix at: 3) at: 3) = $O) ifTrue: [ d1o := d1o + 1. ].
+      (((boardMatrix at: 1) at: 3) = $O) ifTrue: [ d2o := d2o + 1. ].
+      (((boardMatrix at: 3) at: 1) = $O) ifTrue: [ d2o := d2o + 1. ].
+      
+      d1x displayNl.
+      d2x displayNl.
+      d1o displayNl.
+      d2o displayNl.
+
+      ((d1x = 3) | (d2x = 3)) ifTrue: [
+         xwins := xwins + 1.
+         winner := 'Player'.
+         ^true.
+      ].
+
+      ((d1o = 3) | (d2o = 3)) ifTrue: [
+         owins := owins + 1.
+         winner := 'Computer'.
+         ^true.
+      ].
 
 		"Tie or loss. Check loop and count all slots/check nil."
       count := 0.
