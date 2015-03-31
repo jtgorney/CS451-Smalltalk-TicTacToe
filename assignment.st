@@ -60,6 +60,13 @@ TicTacToe extend [
 		'' displayNl.
 		'' displayNl.
 	]
+   
+   "Test the user input for validity."
+   isValidCommand: command [|regex|
+      (command = 'quit') ifTrue: [ ^true. ].
+      regex := Regex fromString: '[1-3],[1-3]'.
+      (command =~ regex) ifMatched: [ ^true. ] ifNotMatched: [ ^false ].
+   ]
 
 	runCommand: str [|tokenizedCommand command x y|
 		'Running command' displayNl.
@@ -173,11 +180,6 @@ TicTacToe extend [
       (((boardMatrix at: 3) at: 3) = $O) ifTrue: [ d1o := d1o + 1. ].
       (((boardMatrix at: 1) at: 3) = $O) ifTrue: [ d2o := d2o + 1. ].
       (((boardMatrix at: 3) at: 1) = $O) ifTrue: [ d2o := d2o + 1. ].
-      
-      d1x displayNl.
-      d2x displayNl.
-      d1o displayNl.
-      d2o displayNl.
 
       ((d1x = 3) | (d2x = 3)) ifTrue: [
          xwins := xwins + 1.
@@ -250,12 +252,20 @@ winnerName := nil.
 	] ifFalse: [
 	'Enter a point in the form x,y: ' display.
 		input := stdin nextLine.
-		(input = terminator) ifTrue: [ quit := true ] ifFalse: [
-			game runCommand: input.
-			computersTurn := true.
-			game printScore.
-			game printBoard.
-		].
+      (game isValidCommand: input) ifTrue: [
+		   (input = terminator) ifTrue: [
+         quit := true.
+         'Thank you for playing Tic Tac Toe!' displayNl.
+         ] ifFalse: [
+			   game runCommand: input.
+			   computersTurn := true.
+			   game printScore.
+			   game printBoard.
+		   ].
+      ] ifFalse: [
+         '' displayNl.
+         'Invalid command entered!' displayNl.
+      ].
 	].
 	"Check for winner"
 	winner := game checkWinner.
@@ -279,6 +289,9 @@ winnerName := nil.
             game makeNewGame.
             game printBoard.
 			].
-		] ifFalse: [ quit := true. ].
+		] ifFalse: [
+         quit := true.
+         'Thank you for playing Tic Tac Toe!' displayNl.
+      ].
 	].
 ].
