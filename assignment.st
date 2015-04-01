@@ -3,63 +3,63 @@ Object subclass: #TicTacToe.
 TicTacToe instanceVariableNames: 'boardMatrix moves winner xwins owins'.
 
 TicTacToe extend [
-	"Set the size of the board"
-	initialize [
-		"Initialize rows"
-		boardMatrix := (Array new: 3).
-		"Initialize columns"
-		1 to: 3 do: [:x|
-			boardMatrix at: x put: (Array new: 3).
-		].
-		"Init wins"
-		xwins := 0.
-		owins := 0.
-	]
-	
-	"Make a new game"
-	makeNewGame [
-		1 to: (boardMatrix size) do: [:x|
-			boardMatrix at: x put: (Array new: 3).
-		].
+   "Set the size of the board"
+   initialize [
+      "Initialize rows"
+      boardMatrix := (Array new: 3).
+      "Initialize columns"
+      1 to: 3 do: [:x|
+         boardMatrix at: x put: (Array new: 3).
+      ].
+      "Init wins"
+      xwins := 0.
+      owins := 0.
+   ]
+   
+   "Make a new game"
+   makeNewGame [
+      1 to: (boardMatrix size) do: [:x|
+         boardMatrix at: x put: (Array new: 3).
+      ].
       '' displayNl.
       'A clean board has been created.' displayNl.
       '' displayNl.
-	]
-	
-	"Print the scoreboard"
-	printScore [
-		'' displayNl.
-		' Scoreboard' displayNl.
-		'-----------------------' displayNl.
-		'| Your Wins: ' display.
-		xwins printNl.
-		'| Comp Wins: ' display.
-		owins printNl.
-		'-----------------------' displayNl.
-	]
+   ]
+   
+   "Print the scoreboard"
+   printScore [
+      '' displayNl.
+      ' Scoreboard' displayNl.
+      '-----------------------' displayNl.
+      '| Your Wins: ' display.
+      xwins printNl.
+      '| Comp Wins: ' display.
+      owins printNl.
+      '-----------------------' displayNl.
+   ]
 
-	"Print the board"
-	printBoard [|rowCount columnCount|
-		boardMatrix do: [:x|
-			"Printing rows"
-			x do: [:y|
-				' ---' display.
-			].
-			'' displayNl.
-			columnCount := 1.
-			x do: [:y|
-				'| ' display.
-				"Display the move"
-				(y = nil) ifTrue: [ '  ' display ] ifFalse: [ ((y asString), ' ') display ].
-				(columnCount = (boardMatrix size)) ifTrue: [ '|' display ] ifFalse: [ columnCount := columnCount + 1 ].
-			].
-			'' displayNl.
-		].
-		"Print bottom line."
-		boardMatrix do: [:x| ' ---' display ].
-		'' displayNl.
-		'' displayNl.
-	]
+   "Print the board"
+   printBoard [|rowCount columnCount|
+      boardMatrix do: [:x|
+         "Printing rows"
+         x do: [:y|
+            ' ---' display.
+         ].
+         '' displayNl.
+         columnCount := 1.
+         x do: [:y|
+            '| ' display.
+            "Display the move"
+            (y = nil) ifTrue: [ '  ' display ] ifFalse: [ ((y asString), ' ') display ].
+            (columnCount = (boardMatrix size)) ifTrue: [ '|' display ] ifFalse: [ columnCount := columnCount + 1 ].
+         ].
+         '' displayNl.
+      ].
+      "Print bottom line."
+      boardMatrix do: [:x| ' ---' display ].
+      '' displayNl.
+      '' displayNl.
+   ]
    
    "Test the user input for validity."
    isValidCommand: command [|regex|
@@ -76,20 +76,170 @@ TicTacToe extend [
    ]
    
    "Run a command on the game."
-	runCommand: str [|tokenizedCommand command x y|
-		tokenizedCommand := str subStrings: ','.
-		x := (tokenizedCommand at: 1) asInteger.
-		y := (tokenizedCommand at: 2) asInteger.
+   runCommand: str [|tokenizedCommand command x y|
+      tokenizedCommand := str subStrings: ','.
+      x := (tokenizedCommand at: 1) asInteger.
+      y := (tokenizedCommand at: 2) asInteger.
       ((self isOpenSlot: x andY: y)) ifTrue: [
-		   (boardMatrix at: x) at: y put: $X.
+         (boardMatrix at: x) at: y put: $X.
          ^true.
       ] ifFalse: [
          ^false.
       ].
-	]
+   ]
    
    "Always choose the best point in the matrix. Block the opponent where we can."
    runChallengeComputer [|moveCount c1MoveCount c2MoveCount c3MoveCount d1MoveCount d2MoveCount|
+      
+      "Always move on the center."
+      (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+         (boardMatrix at: 2) at: 2 put: $O.
+         ^nil.
+      ].
+
+      "First corner"
+      "(((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+         (boardMatrix at: 1) at: 1 put: $O.
+         ^nil.
+      ]."
+
+      "Second corner"
+      "(((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+         (boardMatrix at: 1) at: 3 put: $O.
+         ^nil.
+      ]."
+
+      "Third corner"
+      "(((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+         (boardMatrix at: 3) at: 1 put: $O.
+         ^nil.
+      ]."
+
+      "(((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+         (boardMatrix at: 3) at: 3 put: $O.
+         ^nil.
+      ]."     
+
+      "STEP 1: Check if we can win somewhere"
+      
+      "Check if we can win on the diagonal"
+      d1MoveCount := 0.
+      d2MoveCount := 0.
+      "Diagonal 1: (1,1), (2,2), (3,3)"
+      (((boardMatrix at: 1) at: 1) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+      (((boardMatrix at: 2) at: 2) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. d2MoveCount := d2MoveCount + 1 ].
+      (((boardMatrix at: 3) at: 3) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+   
+      "Diagonal 2: (1,3), (2,2), (3,1)"
+      (((boardMatrix at: 1) at: 3) = $O) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
+      (((boardMatrix at: 3) at: 1) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+      
+      "Find a winning spot on the first diagonal"
+      (d1MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 1 put: $O.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $O.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 3 put: $O.
+            ^nil.
+         ].
+      ].
+
+      "Find a winning spot on the second diagonal"
+      (d2MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 3 put: $O.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $O.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 1 put: $O.
+            ^nil.
+         ].
+      ].
+
+      "Check if we can win on the rows"
+      moveCount := 0.
+      1 to: (boardMatrix size) do: [:x|
+        (((boardMatrix at: x) at: 1) = $O) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 2) = $O) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 3) = $O) ifTrue: [ moveCount := moveCount + 1. ].
+        (moveCount = 2) ifTrue: [
+           1 to: (boardMatrix size) do: [:id|
+              (((boardMatrix at: x) at: id) = nil) ifTrue: [ (boardMatrix at: x) at: id put: $O.  ^nil. ].
+           ].
+        ].
+      ].
+
+      "Check if we can win on the columns"
+      1 to: (boardMatrix size) do: [:x|
+         
+         c1MoveCount := 0.
+         c2MoveCount := 0.
+         c3MoveCount := 0.
+
+         (((boardMatrix at: 1) at: x) = $O) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
+         (((boardMatrix at: 2) at: x) = $O) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
+         (((boardMatrix at: 3) at: x) = $O) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
+      
+         "Logical step"
+         "First column"
+         (c1MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 1 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 1 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 1 put: $O.
+               ^nil.
+            ].
+         ].
+         "Second column"
+         (c2MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 2 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 2 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 2 put: $O.
+               ^nil.
+            ].
+         ].
+         "Third column"
+         (c3MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 3 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 3 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 3 put: $O.
+               ^nil.
+            ].
+         ].
+      ].
+
+      "STEP 2: Check for block opportunities."
+
       "Check diagonals for blocks"
       d1MoveCount := 0.
       d2MoveCount := 0.
@@ -149,107 +299,106 @@ TicTacToe extend [
            ].
         ].
       ].
-      c1MoveCount := 0.
-      c2MoveCount := 0.
-      c3MoveCount := 0.
+
       "Now let's check the column"
       1 to: (boardMatrix size) do: [:x|
-         (((boardMatrix at: x) at: 1) = $X) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
-         (((boardMatrix at: x) at: 2) = $X) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
-         (((boardMatrix at: x) at: 3) = $X) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
+         
+         c1MoveCount := 0.
+         c2MoveCount := 0.
+         c3MoveCount := 0.     
+         
+         (((boardMatrix at: 1) at: x) = $X) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
+         (((boardMatrix at: 2) at: x) = $X) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
+         (((boardMatrix at: 3) at: x) = $X) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
+      
+         "Logical step"
+         "First column"
+         (c1MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 1 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 1 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 1 put: $O.
+               ^nil.
+            ].
+         ].
+         "Second column"
+         (c2MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 2 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 2 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 2 put: $O.
+               ^nil.
+            ].
+         ].
+         "Third column"
+         (c3MoveCount = 2) ifTrue: [
+            (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 1) at: 3 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 2) at: 3 put: $O.
+               ^nil.
+            ].
+            (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+               (boardMatrix at: 3) at: 3 put: $O.
+               ^nil.
+            ].
+         ].
       ].
-      "Logical step"
-      "First column"
-      c1MoveCount displayNl.
-      c2MoveCount displayNl.
-      c3MoveCount displayNl.
-
-      (c1MoveCount = 2) ifTrue: [
-         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 1 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 1 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 1 put: $O.
-            ^nil.
-         ].
-      ].
-      "Second column"
-       (c2MoveCount = 2) ifTrue: [
-         (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 2 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 2 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 2 put: $O.
-            ^nil.
-         ].
-      ].
-      "Third column"
-      (c1MoveCount = 2) ifTrue: [
-         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 3 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 3 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 3 put: $O.
-            ^nil.
-         ].
-      ].
-
       "No more tricks up the computer's sleeve. Just pick random."
       self runComputer.
    ]
    
    "Perform the computer logic."
-	runComputer [|rand rand1 rand2 running|
-		"Pick a number one through 9 and MOD it to get row and column. Keep going"
-		rand := Random new.
-		"Initial random nums"
-		rand1 := (((rand next) * 2) asInteger) + 1.
-		rand2 := (((rand next) * 2) asInteger) + 1.
-		"Get the value at x,y"
-		running := true.
-		[running] whileTrue: [
-			"Determine if we can actually mark the point."
-			(((boardMatrix at: rand1) at: rand2) = nil) ifTrue: [
-				"Mark the point"
-				(boardMatrix at: rand1) at: rand2 put: $O.
-				running := false.
-			] ifFalse: [
-				"Generate new points"
-				rand1 := (((rand next) * 2) asInteger) + 1.
-				rand2 := (((rand next) * 2) asInteger) + 1.
-			].
-		].
-	]
-	
-	"Check if we have a winner and store the winner."
-	checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 rx ro d1x d1o d2x d2o count element|
-		"It would have been easier to use a 9 slot array, but I'm
+   runComputer [|rand rand1 rand2 running|
+      "Pick a number one through 9 and MOD it to get row and column. Keep going"
+      rand := Random new.
+      "Initial random nums"
+      rand1 := (((rand next) * 2) asInteger) + 1.
+      rand2 := (((rand next) * 2) asInteger) + 1.
+      "Get the value at x,y"
+      running := true.
+      [running] whileTrue: [
+         "Determine if we can actually mark the point."
+         (((boardMatrix at: rand1) at: rand2) = nil) ifTrue: [
+            "Mark the point"
+            (boardMatrix at: rand1) at: rand2 put: $O.
+            running := false.
+         ] ifFalse: [
+            "Generate new points"
+            rand1 := (((rand next) * 2) asInteger) + 1.
+            rand2 := (((rand next) * 2) asInteger) + 1.
+         ].
+      ].
+   ]
+   
+   "Check if we have a winner and store the winner."
+   checkWinner [|xc1 xc2 xc3 oc1 oc2 oc3 rx ro d1x d1o d2x d2o count element|
+      "It would have been easier to use a 9 slot array, but I'm
        too far to quit now!"
       "Column counting"
-		xc1 := 0.
-		xc2 := 0.
-		xc3 := 0.
-		oc1 := 0.
-		oc2 := 0.
-		oc3 := 0.
+      xc1 := 0.
+      xc2 := 0.
+      xc3 := 0.
+      oc1 := 0.
+      oc2 := 0.
+      oc3 := 0.
 
-		"Check rows"
-		1 to: (boardMatrix size) do: [:x|
+      "Check rows"
+      1 to: (boardMatrix size) do: [:x|
 
          rx := 0.
          ro := 0.
@@ -270,41 +419,41 @@ TicTacToe extend [
             winner := 'Computer'.
             ^true.
          ].
-		].
+      ].
 
-		"Check columns"
-		1 to: (boardMatrix size) do: [:x|
-			"Increment row counts"
-			(((boardMatrix at: x) at: 1) = $X) ifTrue: [ xc1 := xc1 + 1. ].
+      "Check columns"
+      1 to: (boardMatrix size) do: [:x|
+         "Increment row counts"
+         (((boardMatrix at: x) at: 1) = $X) ifTrue: [ xc1 := xc1 + 1. ].
          (((boardMatrix at: x) at: 1) = $O) ifTrue: [ oc1 := oc1 + 1. ].
 
-			(((boardMatrix at: x) at: 2) = $X) ifTrue: [ xc2 := xc2 + 1. ].
+         (((boardMatrix at: x) at: 2) = $X) ifTrue: [ xc2 := xc2 + 1. ].
          (((boardMatrix at: x) at: 2) = $O) ifTrue: [ oc2 := oc2 + 1. ].
-			
+         
          (((boardMatrix at: x) at: 3) = $X) ifTrue: [ xc3 := xc3 + 1. ].
          (((boardMatrix at: x) at: 3) = $O) ifTrue: [ oc3 := oc3 + 1. ].
-		].
+      ].
       
-		"Perform logical check."
-		((xc1 = 3 ) | (xc2 = 3) | (xc3 = 3)) ifTrue: [
-			xwins := xwins + 1.
-			winner := 'Player'.
-			^true.
-		].
-		((oc1 = 3) | (oc2 = 3) | (oc3 = 3)) ifTrue: [
-			owins := owins + 1.
-			winner := 'Computer'.
-			^true.
-		].
-	
-		"Check diagonals"
+      "Perform logical check."
+      ((xc1 = 3 ) | (xc2 = 3) | (xc3 = 3)) ifTrue: [
+         xwins := xwins + 1.
+         winner := 'Player'.
+         ^true.
+      ].
+      ((oc1 = 3) | (oc2 = 3) | (oc3 = 3)) ifTrue: [
+         owins := owins + 1.
+         winner := 'Computer'.
+         ^true.
+      ].
+   
+      "Check diagonals"
 
       "Set diagonal count"
       d1x := 0.
       d2x := 0.
       d1o := 0.
       d2o := 0.
-		
+      
       "Check for player X"
       (((boardMatrix at: 1) at: 1) = $X) ifTrue: [ d1x := d1x + 1. ].
       (((boardMatrix at: 2) at: 2) = $X) ifTrue: [ d1x := d1x + 1. d2x := d2x + 1. ].
@@ -333,7 +482,7 @@ TicTacToe extend [
          ^true.
       ].
 
-		"Tie or loss. Check loop and count all slots/check nil."
+      "Tie or loss. Check loop and count all slots/check nil."
       count := 0.
       1 to: (boardMatrix size) do: [:x|
          1 to: (boardMatrix size) do: [:y|
@@ -346,14 +495,14 @@ TicTacToe extend [
          winner := 'No one'.
          ^true.
       ].
-		
-		^false.
-	]
-	
-	"Get the winner's name."
-	getWinner [
-		^winner.
-	]
+      
+      ^false.
+   ]
+   
+   "Get the winner's name."
+   getWinner [
+      ^winner.
+   ]
 ].
 
 "Determine which player is who"
@@ -385,65 +534,65 @@ winnerName := nil.
 
 "The main game loop"
 [quit] whileFalse: [
-	(computersTurn) ifTrue: [
-		('Computer is playing.') displayNl.
+   (computersTurn) ifTrue: [
+      ('Computer is playing.') displayNl.
       (challengeMode) ifTrue: [
          game runChallengeComputer.
       ] ifFalse: [
-		   game runComputer.
+         game runComputer.
       ].
-		('Computer has made a move. Your turn!') displayNl.
-		'' displayNl.
-		computersTurn := false.
-		game printScore.
-		game printBoard.
-	] ifFalse: [
-	'Enter a point in the form x,y: ' display.
-		input := stdin nextLine.
+      ('Computer has made a move. Your turn!') displayNl.
+      '' displayNl.
+      computersTurn := false.
+      game printScore.
+      game printBoard.
+   ] ifFalse: [
+   'Enter a point in the form x,y: ' display.
+      input := stdin nextLine.
       (game isValidCommand: input) ifTrue: [
-		   (input = terminator) ifTrue: [
+         (input = terminator) ifTrue: [
          quit := true.
          'Thank you for playing Tic Tac Toe!' displayNl.
          ] ifFalse: [
-			   (game runCommand: input) ifTrue: [
-			      computersTurn := true.
-			      game printScore.
-			      game printBoard.
+            (game runCommand: input) ifTrue: [
+               computersTurn := true.
+               game printScore.
+               game printBoard.
             ] ifFalse: [
                "Point is used"
                'The point you have selected has already been picked!' displayNl.
             ].
-		   ].
+         ].
       ] ifFalse: [
          '' displayNl.
          'Invalid command entered!' displayNl.
       ].
-	].
-	"Check for winner"
-	winner := game checkWinner.
-	(winner) ifTrue: [
-		"Get the winner and display their name."
-		winnerName := game getWinner.
-		(winnerName, ' has won the game.') displayNl.
+   ].
+   "Check for winner"
+   winner := game checkWinner.
+   (winner) ifTrue: [
+      "Get the winner and display their name."
+      winnerName := game getWinner.
+      (winnerName, ' has won the game.') displayNl.
       game printScore.
-		'' displayNl.
-		'Would you like to play again? (y/n): ' display.
-		in := stdin nextLine.
-		"Check for yes to continue"
-		((in = 'y') | (in = 'Y')) ifTrue: [
-			(playerStarts) ifTrue: [
-				playerStarts := false.
-				computersTurn := true.
+      '' displayNl.
+      'Would you like to play again? (y/n): ' display.
+      in := stdin nextLine.
+      "Check for yes to continue"
+      ((in = 'y') | (in = 'Y')) ifTrue: [
+         (playerStarts) ifTrue: [
+            playerStarts := false.
+            computersTurn := true.
             game makeNewGame.
-			] ifFalse: [
-				playerStarts := true.
-				computersTurn := false.
+         ] ifFalse: [
+            playerStarts := true.
+            computersTurn := false.
             game makeNewGame.
             game printBoard.
-			].
-		] ifFalse: [
+         ].
+      ] ifFalse: [
          quit := true.
          'Thank you for playing Tic Tac Toe!' displayNl.
       ].
-	].
+   ].
 ].
