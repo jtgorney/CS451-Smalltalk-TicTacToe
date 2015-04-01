@@ -1,6 +1,6 @@
 "Build the board object"
 Object subclass: #TicTacToe.
-TicTacToe instanceVariableNames: 'boardMatrix moves winner xwins owins'.
+TicTacToe instanceVariableNames: 'boardMatrix moves winner xwins owins ties'.
 
 TicTacToe extend [
    "Set the size of the board"
@@ -14,6 +14,7 @@ TicTacToe extend [
       "Init wins"
       xwins := 0.
       owins := 0.
+      ties := 0.
    ]
    
    "Make a new game"
@@ -31,10 +32,12 @@ TicTacToe extend [
       '' displayNl.
       ' Scoreboard' displayNl.
       '-----------------------' displayNl.
-      '| Your Wins: ' display.
-      xwins printNl.
-      '| Comp Wins: ' display.
+      '| Player Wins: ' display.
       owins printNl.
+      '| Computer Wins: ' display.
+      xwins printNl.
+      '| Ties: ' display.
+      ties printNl.
       '-----------------------' displayNl.
    ]
 
@@ -81,7 +84,7 @@ TicTacToe extend [
       x := (tokenizedCommand at: 1) asInteger.
       y := (tokenizedCommand at: 2) asInteger.
       ((self isOpenSlot: x andY: y)) ifTrue: [
-         (boardMatrix at: x) at: y put: $X.
+         (boardMatrix at: x) at: y put: $O.
          ^true.
       ] ifFalse: [
          ^false.
@@ -89,158 +92,50 @@ TicTacToe extend [
    ]
    
    "Always choose the best point in the matrix. Block the opponent where we can."
-   runChallengeComputer [|moveCount c1MoveCount c2MoveCount c3MoveCount d1MoveCount d2MoveCount|
+   runChallengeComputer [|moveCount c1MoveCount c2MoveCount c3MoveCount d1MoveCount d2MoveCount|    
       
-      "Always move on the center."
-      (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-         (boardMatrix at: 2) at: 2 put: $O.
-         ^nil.
+      "STEP 0: Priority trap block"
+      "Left side"
+      ((((boardMatrix at: 2) at: 1) = $O) & (((boardMatrix at: 2) at: 2) = $O)) ifTrue: [
+         "We need to block something here."
+         "Check if row 1 has anything in it."
+         ((((boardMatrix at: 1) at: 1) = nil) & (((boardMatrix at: 1) at: 2) = nil) & (((boardMatrix at: 1) at: 3) = nil))
+         ifTrue: [
+            "Block"
+            (boardMatrix at: 2) at: 1 put: $X.
+            ^nil.
+         ].
+         "Check row 3"
+         ((((boardMatrix at: 3) at: 1) = nil) & (((boardMatrix at: 3) at: 2) = nil) & (((boardMatrix at: 3) at: 3) = nil))
+         ifTrue: [
+            "Block"
+            (boardMatrix at: 3) at: 1 put: $X.
+            ^nil.
+         ].
       ].
 
-      "First corner"
-      "(((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-         (boardMatrix at: 1) at: 1 put: $O.
-         ^nil.
-      ]."
-
-      "Second corner"
-      "(((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-         (boardMatrix at: 1) at: 3 put: $O.
-         ^nil.
-      ]."
-
-      "Third corner"
-      "(((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-         (boardMatrix at: 3) at: 1 put: $O.
-         ^nil.
-      ]."
-
-      "(((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-         (boardMatrix at: 3) at: 3 put: $O.
-         ^nil.
-      ]."     
+      "Right side"
+      ((((boardMatrix at: 2) at: 3) = $O) & (((boardMatrix at: 2) at: 2) = $O)) ifTrue: [
+         "We need to block something here."
+         "Check if row 1 has anything in it."
+         ((((boardMatrix at: 1) at: 1) = nil) & (((boardMatrix at: 1) at: 2) = nil) & (((boardMatrix at: 1) at: 3) = nil))
+         ifTrue: [
+            "Block"
+            (boardMatrix at: 2) at: 3 put: $X.
+            ^nil.
+         ].
+         "Check row 3"
+         ((((boardMatrix at: 3) at: 1) = nil) & (((boardMatrix at: 3) at: 2) = nil) & (((boardMatrix at: 3) at: 3) = nil))
+         ifTrue: [
+            "Block"
+            (boardMatrix at: 3) at: 3 put: $X.
+            ^nil.
+         ].
+      ].
 
       "STEP 1: Check if we can win somewhere"
       
       "Check if we can win on the diagonal"
-      d1MoveCount := 0.
-      d2MoveCount := 0.
-      "Diagonal 1: (1,1), (2,2), (3,3)"
-      (((boardMatrix at: 1) at: 1) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
-      (((boardMatrix at: 2) at: 2) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. d2MoveCount := d2MoveCount + 1 ].
-      (((boardMatrix at: 3) at: 3) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
-   
-      "Diagonal 2: (1,3), (2,2), (3,1)"
-      (((boardMatrix at: 1) at: 3) = $O) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
-      (((boardMatrix at: 3) at: 1) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
-      
-      "Find a winning spot on the first diagonal"
-      (d1MoveCount = 2) ifTrue: [
-         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 1 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 2 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 3 put: $O.
-            ^nil.
-         ].
-      ].
-
-      "Find a winning spot on the second diagonal"
-      (d2MoveCount = 2) ifTrue: [
-         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 3 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 2 put: $O.
-            ^nil.
-         ].
-         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 1 put: $O.
-            ^nil.
-         ].
-      ].
-
-      "Check if we can win on the rows"
-      moveCount := 0.
-      1 to: (boardMatrix size) do: [:x|
-        (((boardMatrix at: x) at: 1) = $O) ifTrue: [ moveCount := moveCount + 1. ].
-        (((boardMatrix at: x) at: 2) = $O) ifTrue: [ moveCount := moveCount + 1. ].
-        (((boardMatrix at: x) at: 3) = $O) ifTrue: [ moveCount := moveCount + 1. ].
-        (moveCount = 2) ifTrue: [
-           1 to: (boardMatrix size) do: [:id|
-              (((boardMatrix at: x) at: id) = nil) ifTrue: [ (boardMatrix at: x) at: id put: $O.  ^nil. ].
-           ].
-        ].
-      ].
-
-      "Check if we can win on the columns"
-      1 to: (boardMatrix size) do: [:x|
-         
-         c1MoveCount := 0.
-         c2MoveCount := 0.
-         c3MoveCount := 0.
-
-         (((boardMatrix at: 1) at: x) = $O) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
-         (((boardMatrix at: 2) at: x) = $O) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
-         (((boardMatrix at: 3) at: x) = $O) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
-      
-         "Logical step"
-         "First column"
-         (c1MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 1 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 1 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 1 put: $O.
-               ^nil.
-            ].
-         ].
-         "Second column"
-         (c2MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 2 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 2 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 2 put: $O.
-               ^nil.
-            ].
-         ].
-         "Third column"
-         (c3MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 3 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 3 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 3 put: $O.
-               ^nil.
-            ].
-         ].
-      ].
-
-      "STEP 2: Check for block opportunities."
-
-      "Check diagonals for blocks"
       d1MoveCount := 0.
       d2MoveCount := 0.
       "Diagonal 1: (1,1), (2,2), (3,3)"
@@ -250,21 +145,138 @@ TicTacToe extend [
    
       "Diagonal 2: (1,3), (2,2), (3,1)"
       (((boardMatrix at: 1) at: 3) = $X) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
-      (((boardMatrix at: 3) at: 1) = $X) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+      (((boardMatrix at: 3) at: 1) = $X) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
+      
+      "Find a winning spot on the first diagonal"
+      (d1MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 1 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 3 put: $X.
+            ^nil.
+         ].
+      ].
+
+      "Find a winning spot on the second diagonal"
+      (d2MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 3 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 1 put: $X.
+            ^nil.
+         ].
+      ].
+
+      "Check if we can win on the rows"
+      1 to: (boardMatrix size) do: [:x|
+        moveCount := 0.
+        (((boardMatrix at: x) at: 1) = $X) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 2) = $X) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 3) = $X) ifTrue: [ moveCount := moveCount + 1. ].
+        (moveCount = 2) ifTrue: [
+           1 to: (boardMatrix size) do: [:id|
+              (((boardMatrix at: x) at: id) = nil) ifTrue: [ (boardMatrix at: x) at: id put: $X. ^nil. ].
+           ].
+        ].
+      ].
+
+      "Check if we can win on the columns"
+      c1MoveCount := 0.
+      c2MoveCount := 0.
+      c3MoveCount := 0.
+
+      1 to: (boardMatrix size) do: [:x|
+         (((boardMatrix at: x) at: 1) = $X) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
+         (((boardMatrix at: x) at: 2) = $X) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
+         (((boardMatrix at: x) at: 3) = $X) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
+      ].
+   
+      "Logical step"
+      "First column"
+      (c1MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 1 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 1 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 1 put: $X.
+            ^nil.
+         ].
+      ].
+      "Second column"
+      (c2MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 2 put: $X.
+            ^nil.
+         ].
+      ].
+      "Third column"
+      (c3MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 3 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 3 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 3 put: $X.
+            ^nil.
+         ].
+      ].
+
+      "STEP 2: Check for block opportunities."
+
+      "Check diagonals for blocks"
+      d1MoveCount := 0.
+      d2MoveCount := 0.
+      "Diagonal 1: (1,1), (2,2), (3,3)"
+      (((boardMatrix at: 1) at: 1) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+      (((boardMatrix at: 2) at: 2) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. d2MoveCount := d2MoveCount + 1 ].
+      (((boardMatrix at: 3) at: 3) = $O) ifTrue: [ d1MoveCount := d1MoveCount + 1. ].
+   
+      "Diagonal 2: (1,3), (2,2), (3,1)"
+      (((boardMatrix at: 1) at: 3) = $O) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
+      (((boardMatrix at: 3) at: 1) = $O) ifTrue: [ d2MoveCount := d2MoveCount + 1. ].
       "We already calculated (2,2)"
       
       "Find and mark the block in the first diagonal."
       (d1MoveCount = 2) ifTrue: [
          (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 1 put: $O.
+            (boardMatrix at: 1) at: 1 put: $X.
             ^nil.
          ].
          (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 2 put: $O.
+            (boardMatrix at: 2) at: 2 put: $X.
             ^nil.
          ].
          (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 3 put: $O.
+            (boardMatrix at: 3) at: 3 put: $X.
             ^nil.
          ].
       ].
@@ -272,90 +284,88 @@ TicTacToe extend [
       "Find and mark the blick in the second diagonal."
       (d2MoveCount = 2) ifTrue: [
          (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-            (boardMatrix at: 1) at: 3 put: $O.
+            (boardMatrix at: 1) at: 3 put: $X.
             ^nil.
          ].
          (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-            (boardMatrix at: 2) at: 2 put: $O.
+            (boardMatrix at: 2) at: 2 put: $X.
             ^nil.
          ].
          (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-            (boardMatrix at: 3) at: 1 put: $O.
+            (boardMatrix at: 3) at: 1 put: $X.
             ^nil.
          ].
       ].
       
       "Check each row, the computer is always O. Player always X."
-      moveCount := 0.
       1 to: (boardMatrix size) do: [:x|
-        (((boardMatrix at: x) at: 1) = $X) ifTrue: [ moveCount := moveCount + 1. ].
-        (((boardMatrix at: x) at: 2) = $X) ifTrue: [ moveCount := moveCount + 1. ].
-        (((boardMatrix at: x) at: 3) = $X) ifTrue: [ moveCount := moveCount + 1. ].
+        moveCount := 0.
+        (((boardMatrix at: x) at: 1) = $O) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 2) = $O) ifTrue: [ moveCount := moveCount + 1. ].
+        (((boardMatrix at: x) at: 3) = $O) ifTrue: [ moveCount := moveCount + 1. ].
         "Block them!!"
         (moveCount = 2) ifTrue: [
            1 to: (boardMatrix size) do: [:id|
               "Blocked!"
-              (((boardMatrix at: x) at: id) = nil) ifTrue: [ (boardMatrix at: x) at: id put: $O. ^nil. ].
+              (((boardMatrix at: x) at: id) = nil) ifTrue: [ (boardMatrix at: x) at: id put: $X. ^nil. ].
            ].
         ].
       ].
 
       "Now let's check the column"
-      1 to: (boardMatrix size) do: [:x|
-         
-         c1MoveCount := 0.
-         c2MoveCount := 0.
-         c3MoveCount := 0.     
-         
-         (((boardMatrix at: 1) at: x) = $X) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
-         (((boardMatrix at: 2) at: x) = $X) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
-         (((boardMatrix at: 3) at: x) = $X) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
-      
-         "Logical step"
-         "First column"
-         (c1MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 1 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 1 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 1 put: $O.
-               ^nil.
-            ].
+      c1MoveCount := 0.
+      c2MoveCount := 0.
+      c3MoveCount := 0. 
+
+      1 to: (boardMatrix size) do: [:x|    
+         (((boardMatrix at: x) at: 1) = $O) ifTrue: [ c1MoveCount := c1MoveCount + 1. ].
+         (((boardMatrix at: x) at: 2) = $O) ifTrue: [ c2MoveCount := c2MoveCount + 1. ].
+         (((boardMatrix at: x) at: 3) = $O) ifTrue: [ c3MoveCount := c3MoveCount + 1. ].
+      ].
+      "Logical step"
+      "First column"
+      (c1MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 1 put: $X.
+            ^nil.
          ].
-         "Second column"
-         (c2MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 2 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 2 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 2 put: $O.
-               ^nil.
-            ].
+         (((boardMatrix at: 2) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 1 put: $X.
+            ^nil.
          ].
-         "Third column"
-         (c3MoveCount = 2) ifTrue: [
-            (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 1) at: 3 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 2) at: 3 put: $O.
-               ^nil.
-            ].
-            (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
-               (boardMatrix at: 3) at: 3 put: $O.
-               ^nil.
-            ].
+         (((boardMatrix at: 3) at: 1) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 1 put: $X.
+            ^nil.
+         ].
+      ].
+      "Second column"
+      (c2MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 2 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 2) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 2 put: $X.
+            ^nil.
+         ].
+      ].
+      "Third column"
+      (c3MoveCount = 2) ifTrue: [
+         (((boardMatrix at: 1) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 1) at: 3 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 2) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 2) at: 3 put: $X.
+            ^nil.
+         ].
+         (((boardMatrix at: 3) at: 3) = nil) ifTrue: [
+            (boardMatrix at: 3) at: 3 put: $X.
+            ^nil.
          ].
       ].
       "No more tricks up the computer's sleeve. Just pick random."
@@ -375,7 +385,7 @@ TicTacToe extend [
          "Determine if we can actually mark the point."
          (((boardMatrix at: rand1) at: rand2) = nil) ifTrue: [
             "Mark the point"
-            (boardMatrix at: rand1) at: rand2 put: $O.
+            (boardMatrix at: rand1) at: rand2 put: $X.
             running := false.
          ] ifFalse: [
             "Generate new points"
@@ -410,13 +420,13 @@ TicTacToe extend [
 
          (rx = 3) ifTrue: [
             xwins := xwins + 1.
-            winner := 'Player'.
+            winner := 'Computer'.
             ^true.
          ].
 
          (ro = 3) ifTrue: [
             owins := owins + 1.
-            winner := 'Computer'.
+            winner := 'Player'.
             ^true.
          ].
       ].
@@ -437,12 +447,12 @@ TicTacToe extend [
       "Perform logical check."
       ((xc1 = 3 ) | (xc2 = 3) | (xc3 = 3)) ifTrue: [
          xwins := xwins + 1.
-         winner := 'Player'.
+         winner := 'Computer'.
          ^true.
       ].
       ((oc1 = 3) | (oc2 = 3) | (oc3 = 3)) ifTrue: [
          owins := owins + 1.
-         winner := 'Computer'.
+         winner := 'Player'.
          ^true.
       ].
    
@@ -471,14 +481,14 @@ TicTacToe extend [
       "Check for diagonal matching X"
       ((d1x = 3) | (d2x = 3)) ifTrue: [
          xwins := xwins + 1.
-         winner := 'Player'.
+         winner := 'Computer'.
          ^true.
       ].
       
       "Check diagonal matching O"
       ((d1o = 3) | (d2o = 3)) ifTrue: [
          owins := owins + 1.
-         winner := 'Computer'.
+         winner := 'Player'.
          ^true.
       ].
 
@@ -493,6 +503,7 @@ TicTacToe extend [
       "No one won"
       (count = 9) ifTrue: [
          winner := 'No one'.
+         ties := ties + 1.
          ^true.
       ].
       
@@ -504,10 +515,6 @@ TicTacToe extend [
       ^winner.
    ]
 ].
-
-"Determine which player is who"
-'Name of Player: ' display.
-player := stdin nextLine.
 
 "Ask for a challenge."
 'The computer would like to challenge you, accept? (y/n): ' display.
